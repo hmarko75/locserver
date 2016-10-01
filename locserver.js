@@ -1,8 +1,34 @@
-var http = require('http');
-var handleRequest = function(request, response) {
-  console.log('Received request for URL: ' + request.url);
-  response.writeHead(200);
-  response.end('Hello World!');
-};
-var www = http.createServer(handleRequest);
-www.listen(8080);
+var fs = require('fs');
+var express = require('express');
+var app = express();
+app.set('port', process.env.PORT || 8080);
+
+var handlebars = require('express3-handlebars')
+	.create({ defaultLayout:'main' });
+app.engine('handlebars', handlebars.engine);
+app.set('view engine', 'handlebars');
+
+app.use(express.static(__dirname + '/public'));
+
+app.get('/', function(req, res){
+	res.render('home');
+});
+
+// custom 404 page
+app.use(function(req, res){
+	res.type('text/plain');
+	res.status(404);
+	res.send('404 - Not Found');
+});
+// custom 500 page
+app.use(function(err, req, res, next){
+	console.error(err.stack);
+	res.type('text/plain');
+	res.status(500);
+	res.send('500 - Server Error');
+});
+
+app.listen(app.get('port'), function(){
+	console.log( 'Express started on http://localhost:' +
+	app.get('port') + '; press Ctrl-C to terminate.' );
+});
